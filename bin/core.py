@@ -1,7 +1,5 @@
 # Core service application
 # Handle background services
-# Get Vault folder
-# Get daily note location
 # Get tasks 
 # Gather statistics
 # Update files
@@ -11,13 +9,34 @@
 # - News
 
 from . import helpers
+import os
 
-def get_hmm():
-    """Get a thought."""
-    return 'hmmm...'
+# service start
+# Get Vault folder
+# Get daily note location
+# Parse pending tasks
 
+# service loop
+## Task management
+# once a day
+# check if daily note created for today
+# get tasks for today from previous day
+# mark previous day as processed
+# parse tasks
+# tasks with date string go into .md file with future tasks
+# tasks with obsidian file reference go into actions for that file
+# tasks with that are completed to go completed tasks
+# insert tasks without time into actions
+# insert tasks with time in schedule
+# tasks that are file references are processed recursively
+# # tasks inside references are processed and added to tasks when scheduled
+# # tasks that contain file references are added to that file
+# 
+# throughout the day
+# tasks that are completed get a timestamp of completion time
+# tasks that are incomplete are copied to a working file file with a task entered time and priority
+# tasks that are incomplete are date parsed and put into schedule section if possible
 
-def hmm():
-    """Contemplation..."""
-    if helpers.get_answer():
-        print(get_hmm())
+## File organisation
+
+# service stop cleanup
