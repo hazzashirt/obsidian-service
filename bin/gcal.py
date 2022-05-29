@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import datetime
 import os.path
+from pickle import UNICODE
 from dateutil import tz
 import sys
 
@@ -10,8 +11,14 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import io
+import re
 
-# If modifying these scopes, delete the file token.json.
+sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding = 'utf-8')
+
+sys.stderr = io.TextIOWrapper(sys.stderr.detach(), encoding = 'utf-8')
+
+# If modifying these scopes, delete the file token_cal.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 
@@ -19,23 +26,22 @@ def main():
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
     """
-    print(sys.path[0])
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
+    # The file token_cal.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if os.path.exists('token_cal.json'):
+        creds = Credentials.from_authorized_user_file('token_cal.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                sys.path[0]+'/credentials.json', SCOPES)
+                sys.path[0]+'/credentials_cal.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.json', 'w') as token:
+        with open('token_cal.json', 'w') as token:
             token.write(creds.to_json())
 
     try:
@@ -52,7 +58,7 @@ def main():
             # print(x['summary'],x['id'])
             calendars.append([x['id'],x['summary']])
         for x in calendars:
-            if x[1] in 'Calendars':
+            if x[1] in 'Work - Reclaimed':
                 work_calendar = x[0]
                 # print('ID: '+work_calendar)
         
@@ -75,12 +81,21 @@ def main():
             return
         # Prints the start and name of events
         for event in events:
-            start = datetime.datetime.strptime(event['start'].get('dateTime', event['start'].get('date')),"%Y-%m-%dT%H:%M:%SZ")
+            start = datetime.datetime.strptime(event['start'].get('dateTime', event['start'].get('date')),"%Y-%m-%dT%H:%M:%S%z")
             start = start.replace(tzinfo=from_zone)
-            end = datetime.datetime.strptime(event['end'].get('dateTime'),"%Y-%m-%dT%H:%M:%SZ")
+            end = datetime.datetime.strptime(event['end'].get('dateTime'),"%Y-%m-%dT%H:%M:%S%z")
             end = end.replace(tzinfo=from_zone)
-            print("- [ ] ",start.astimezone(to_zone).strftime("%H:%M"), event['summary'])
-            print("- [ ] ",end.astimezone(to_zone).strftime("%H:%M"), 'BREAK')
+            eventString=event['summary']
+            emoji_pattern = re.compile("["
+                                        u"\u2705"
+                                        u"\U0001F6E1"
+                                        "]+",flags=re.UNICODE)
+            eventString = emoji_pattern.sub(r'', eventString).strip()
+            # if '\\u' in eventString.encode('utf8')[:3]:
+                # eventString = event['summary'][2:]
+            meeting = "- [ ] "+start.astimezone(to_zone).strftime("%H:%M")+" [["+eventString+"]]"
+            print((meeting))
+            print("- [ ] "+end.astimezone(to_zone).strftime("%H:%M")+ ' Break')
         # calendar = service.calendarList().get(calendar_list[0])
         # print(calendar)
         # print('Getting the upcoming 10 events')
