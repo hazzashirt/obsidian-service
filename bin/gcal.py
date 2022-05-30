@@ -82,37 +82,19 @@ def main():
         # Prints the start and name of events
         for event in events:
             start = datetime.datetime.strptime(event['start'].get('dateTime', event['start'].get('date')),"%Y-%m-%dT%H:%M:%S%z")
-            start = start.replace(tzinfo=from_zone)
+            # start = start.replace(tzinfo=from_zone) # not needed when calendar is already in local time
             end = datetime.datetime.strptime(event['end'].get('dateTime'),"%Y-%m-%dT%H:%M:%S%z")
-            end = end.replace(tzinfo=from_zone)
+            # end = end.replace(tzinfo=from_zone)
             eventString=event['summary']
+            # remove task completion emojis from reclaim
             emoji_pattern = re.compile("["
                                         u"\u2705"
                                         u"\U0001F6E1"
                                         "]+",flags=re.UNICODE)
             eventString = emoji_pattern.sub(r'', eventString).strip()
-            # if '\\u' in eventString.encode('utf8')[:3]:
-                # eventString = event['summary'][2:]
             meeting = "- [ ] "+start.astimezone(to_zone).strftime("%H:%M")+" [["+eventString+"]]"
             print((meeting))
             print("- [ ] "+end.astimezone(to_zone).strftime("%H:%M")+ ' Break')
-        # calendar = service.calendarList().get(calendar_list[0])
-        # print(calendar)
-        # print('Getting the upcoming 10 events')
-        # events_result = service.events().list(calendarId='calendar', timeMin=now,
-        #                                       maxResults=10, singleEvents=True,
-        #                                       orderBy='startTime').execute()
-        # events = events_result.get('items', [])
-
-        # if not events:
-        #     print('No upcoming events found.')
-        #     return
-
-        # # Prints the start and name of the next 10 events
-        # for event in events:
-        #     start = event['start'].get('dateTime', event['start'].get('date'))
-        #     print(start, event['summary'])
-
     except HttpError as error:
         print('An error occurred: %s' % error)
 
